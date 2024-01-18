@@ -40,9 +40,48 @@ def evaluate_board(board):
     # return the estimate value
     return pawn_value + knight_value + bishop_value + rook_value + queen_value
 
+def minimax(board, depth):
+    # board = chess.Board()
+    if depth == 0:
+        return evaluate_board(board)
+
+    if board.turn:
+        max_value = -9999999
+        for move in board.legal_moves:
+            board.push(move)
+            eval = minimax(board, depth-1)
+            board.pop()
+            max_value = max(max_value, eval)
+        return max_value
+    else:
+        min_value = 9999999
+        for move in board.legal_moves:
+            board.push(move)
+            eval = minimax(board, depth-1)
+            board.pop()
+            min_value = max(min_value, eval)
+        return min_value
+
+
 def minimax_algorithm_move(board):
-    if board.legal_moves:
-        return random.choice(list(board.legal_moves))
+    # board = chess.Board()
+
+    best_move = None
+    best_value = -9999999
+
+    for move in board.legal_moves:
+        board.push(move)
+        move_value = minimax(board, 2)
+        board.pop()
+
+        if move_value > best_value:
+            best_value = move_value
+            best_move = move
+
+    return best_move
+
+    # if board.legal_moves:
+    #     return random.choice(list(board.legal_moves))
         
     
     
@@ -55,14 +94,17 @@ def main():
     board = chess.Board()
     path_to_stockfish = "D:\stockfish\stockfish\stockfish-windows-x86-64-avx2.exe"
     engine = chess.engine.SimpleEngine.popen_uci(path_to_stockfish)
-    engine.configure({"Skill Level": 5})
-    i = 0
+    engine.configure({"Skill Level": 0})
+    game_round = 0
     while not board.is_game_over():
-        i += 1
+        game_round += 1
+
         if board.turn:
             move = minimax_algorithm_move(board)
         else:
             move = stock_fish_move(board, engine)
+
+        # move = minimax_algorithm_move(board)
     
         board.push(move)
         print(board, "\n")
@@ -73,23 +115,12 @@ def main():
         result = "stale mate"
     elif board.is_insufficient_material():
         result = "insufficient material"
-    elif board.can_claim_draw():
-        result = "和棋（可要求和）"
     elif board.is_seventyfive_moves() or board.is_fivefold_repetition():
         result = "seventyfive_moves or fivefold_repetition"
 
     print("Game end! Results:", result)
-    print("Game round:", i/2)
+    print("Game round:", game_round)
     engine.quit()
-
-
-
-# test functions
-# while not board.is_game_over():
-#     result = engine.play(board, chess.engine.Limit(time=0.1))
-#     board.push(result.move)
-#     print(board)
-#     print("\n")
 
 main()
 
