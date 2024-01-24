@@ -40,26 +40,32 @@ def evaluate_board(board):
     # return the estimate value
     return pawn_value + knight_value + bishop_value + rook_value + queen_value
 
-def minimax(board, depth):
+def minimax(board, depth, is_maximising_player, alpha, beta):
     # board = chess.Board()
     if depth == 0:
         return evaluate_board(board)
 
-    if board.turn:
+    if is_maximising_player:
         max_value = -9999999
         for move in board.legal_moves:
             board.push(move)
-            eval = minimax(board, depth-1)
+            eval = minimax(board, depth-1, False, alpha, beta)
             board.pop()
             max_value = max(max_value, eval)
+            alpha = max(alpha, max_value)
+            if alpha >= beta:
+                break
         return max_value
     else:
         min_value = 9999999
         for move in board.legal_moves:
             board.push(move)
-            eval = minimax(board, depth-1)
+            eval = minimax(board, depth-1, True, alpha, beta)
             board.pop()
-            min_value = max(min_value, eval)
+            min_value = min(min_value, eval)
+            beta = min(beta, min_value)
+            if alpha >= beta:
+                break
         return min_value
 
 
@@ -71,7 +77,7 @@ def minimax_algorithm_move(board):
 
     for move in board.legal_moves:
         board.push(move)
-        move_value = minimax(board, 2)
+        move_value = minimax(board, 4, True, -9999999, 9999999)
         board.pop()
 
         if move_value > best_value:
