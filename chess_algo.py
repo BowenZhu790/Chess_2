@@ -9,6 +9,18 @@ import random
 # engine.configure({"Skill Level": 5})
 
 board = chess.Board()
+
+pawn_table = [
+    0,   0,   0,   0,   0,   0,  0,   0,
+    5,  10,  10, -20, -20,  10, 10,   5,
+    5,  -5, -10,   0,   0, -10, -5,   5,
+    0,   0,   0,  20,  20,   0,  0,   0,
+    5,   5,  10,  25,  25,  10,  5,   5,
+    10, 10,  20,  30,  30,  20, 10,  10,
+    50, 50,  50,  50,  50,  50, 50,  50,
+    0,   0,   0,   0,   0,   0,  0,   0
+]
+
 def evaluate_board(board):
     # board = chess.Board()
 
@@ -37,8 +49,11 @@ def evaluate_board(board):
     rook_value = 500 * (white_rook - black_rook)
     queen_value = 900 * (white_queen - black_queen)
 
+    white_pawn_score = sum(pawn_table[i] for i in board.pieces(chess.PAWN, chess.WHITE))
+    black_pawn_score = sum(-pawn_table[chess.square_mirror(i)] for i in board.pieces(chess.PAWN, chess.BLACK))
+
     # return the estimate value
-    return pawn_value + knight_value + bishop_value + rook_value + queen_value
+    return pawn_value + knight_value + bishop_value + rook_value + queen_value + white_pawn_score + black_pawn_score
 
 def minimax(board, depth, is_maximising_player, alpha, beta):
     # board = chess.Board()
@@ -77,7 +92,7 @@ def minimax_algorithm_move(board):
 
     for move in board.legal_moves:
         board.push(move)
-        move_value = minimax(board, 4, True, -9999999, 9999999)
+        move_value = minimax(board, 2, True, -9999999, 9999999)
         board.pop()
 
         if move_value > best_value:
@@ -109,6 +124,7 @@ def main():
             move = minimax_algorithm_move(board)
         else:
             move = stock_fish_move(board, engine)
+            # move = random.choice(list(board.legal_moves))
 
         # move = minimax_algorithm_move(board)
     
