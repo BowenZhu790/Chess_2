@@ -10,7 +10,7 @@ import random
 
 board = chess.Board()
 
-pawn_table = [
+pawn_square_table = [
     0,   0,   0,   0,   0,   0,  0,   0,
     5,  10,  10, -20, -20,  10, 10,   5,
     5,  -5, -10,   0,   0, -10, -5,   5,
@@ -20,6 +20,51 @@ pawn_table = [
     50, 50,  50,  50,  50,  50, 50,  50,
     0,   0,   0,   0,   0,   0,  0,   0
 ]
+
+knight_square_table = [
+    -50, -40, -30, -30, -30, -30, -40, -50,
+    -40, -20,  0,   5,   5,   0,  -20, -40,
+    -30,  5,  10,  15,  15,  10,   5,  -30,
+    -30,  0,  15,  20,  20,  15,   0,  -30,
+    -30,  5,  15,  20,  20,  15,   5,  -30,
+    -30,  0,  10,  15,  15,  10,   0,  -30,
+    -40, -20,  0,   0,   0,   0,  -20, -40,
+    -50, -40, -30, -30, -30, -30, -40, -50,
+]
+
+bishop_square_table = [
+    -20, -10, -10, -10, -10, -10, -10, -20,
+    -10,  5,   0,   0,   0,   0,   5,  -10,
+    -10, 10,  10,  10,  10,  10,  10, -10,
+    -10,  0,  10,  10,  10,  10,   0, -10,
+    -10,  5,   5,  10,  10,   5,   5, -10,
+    -10,  0,   5,  10,  10,   5,   0, -10,
+    -10,  0,   0,   0,   0,   0,   0, -10,
+    -20, -10, -10, -10, -10, -10, -10, -20,
+]
+
+rook_square_table = [
+    0,  0,  0,  5,  5,  0,  0,  0,
+    -5, 0,  0,  0,  0,  0,  0, -5,
+    -5, 0,  0,  0,  0,  0,  0, -5,
+    -5, 0,  0,  0,  0,  0,  0, -5,
+    -5, 0,  0,  0,  0,  0,  0, -5,
+    -5, 0,  0,  0,  0,  0,  0, -5,
+    5, 10, 10, 10, 10, 10, 10,  5,
+    0,  0,  0,  0,  0,  0,  0,  0,
+]
+
+queen_square_table = [
+    -20, -10, -10, -5, -5, -10, -10, -20,
+    -10, 0,   0,   0,  0,   0,   0,  -10,
+    -10, 0,   5,   5,  5,   5,   0,  -10,
+     0,   0,   5,   5,  5,   5,   0,   -5,
+    -5,   0,   5,   5,  5,   5,   0,   -5,
+    -10,  0,   5,   5,  5,   5,   0,  -10,
+    -10,  0,   0,   0,  0,   0,   0,  -10,
+    -20, -10, -10, -5, -5, -10, -10, -20
+]
+
 
 def evaluate_board(board):
     # board = chess.Board()
@@ -49,11 +94,23 @@ def evaluate_board(board):
     rook_value = 500 * (white_rook - black_rook)
     queen_value = 900 * (white_queen - black_queen)
 
-    white_pawn_score = sum(pawn_table[i] for i in board.pieces(chess.PAWN, chess.WHITE))
-    black_pawn_score = sum(-pawn_table[chess.square_mirror(i)] for i in board.pieces(chess.PAWN, chess.BLACK))
+    white_pawn_score = sum(pawn_square_table[i] for i in board.pieces(chess.PAWN, chess.WHITE))
+    black_pawn_score = sum(-pawn_square_table[chess.square_mirror(i)] for i in board.pieces(chess.PAWN, chess.BLACK))
+
+    white_knight_score = sum(knight_square_table[i] for i in board.pieces(chess.KNIGHT, chess.WHITE))
+    black_knight_score = sum(-knight_square_table[chess.square_mirror(i)] for i in board.pieces(chess.KNIGHT, chess.BLACK))
+
+    white_bishop_score = sum(bishop_square_table[i] for i in board.pieces(chess.BISHOP, chess.WHITE))
+    black_bishop_score = sum(-bishop_square_table[chess.square_mirror(i)] for i in board.pieces(chess.BISHOP, chess.BLACK))
+
+    white_rook_score = sum(rook_square_table[i] for i in board.pieces(chess.ROOK, chess.WHITE))
+    black_rook_score = sum(-rook_square_table[chess.square_mirror(i)] for i in board.pieces(chess.ROOK, chess.BLACK))
+
+    white_queen_score = sum(queen_square_table[i] for i in board.pieces(chess.QUEEN, chess.WHITE))
+    black_queen_score = sum(-queen_square_table[chess.square_mirror(i)] for i in board.pieces(chess.QUEEN, chess.BLACK))
 
     # return the estimate value
-    return pawn_value + knight_value + bishop_value + rook_value + queen_value + white_pawn_score + black_pawn_score
+    return pawn_value + knight_value + bishop_value + rook_value + queen_value + white_pawn_score + black_pawn_score + white_knight_score + black_knight_score + white_bishop_score + black_bishop_score + white_rook_score + black_rook_score + white_queen_score + black_queen_score
 
 def minimax(board, depth, is_maximising_player, alpha, beta):
     # board = chess.Board()
@@ -120,13 +177,13 @@ def main():
     while not board.is_game_over():
         game_round += 1
 
+        # down white, up black
         if board.turn:
             move = minimax_algorithm_move(board)
         else:
             move = stock_fish_move(board, engine)
             # move = random.choice(list(board.legal_moves))
-
-        # move = minimax_algorithm_move(board)
+            # move = minimax_algorithm_move(board)
     
         board.push(move)
         print(board, "\n")
