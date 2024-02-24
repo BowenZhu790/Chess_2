@@ -3,6 +3,7 @@ import chess
 import chess.engine
 import random
 
+from chess_algo_logger import ChessAlgoLogger
 # path_to_stockfish = "D:\stockfish\stockfish\stockfish-windows-x86-64-avx2.exe"
 # engine = chess.engine.SimpleEngine.popen_uci(path_to_stockfish)
 
@@ -170,12 +171,12 @@ def stock_fish_move(board, engine):
 
 def main():
     board = chess.Board()
+    chess_logger = ChessAlgoLogger()
+
     path_to_stockfish = "D:\stockfish\stockfish\stockfish-windows-x86-64-avx2.exe"
     engine = chess.engine.SimpleEngine.popen_uci(path_to_stockfish)
     engine.configure({"Skill Level": 0})
-    game_round = 0
     while not board.is_game_over():
-        game_round += 1
 
         # down white, up black
         if board.turn:
@@ -184,9 +185,14 @@ def main():
             move = stock_fish_move(board, engine)
             # move = random.choice(list(board.legal_moves))
             # move = minimax_algorithm_move(board)
+        
+        chess_logger.log_move(move, board.turn)
+        chess_logger.log_capture(board, move)
     
         board.push(move)
         print(board, "\n")
+    
+    chess_logger.summarize_game()
 
     if board.is_checkmate():
         result = "white win" if board.turn == chess.BLACK else "black win"
@@ -197,8 +203,9 @@ def main():
     elif board.is_seventyfive_moves() or board.is_fivefold_repetition():
         result = "seventyfive_moves or fivefold_repetition"
 
+        
+
     print("Game end! Results:", result)
-    print("Game round:", game_round)
     engine.quit()
 
 main()
