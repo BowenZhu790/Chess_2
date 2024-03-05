@@ -2,6 +2,7 @@
 import chess
 import chess.engine
 import random
+import time
 
 from chess_algo_logger import ChessAlgoLogger
 # path_to_stockfish = "D:\stockfish\stockfish\stockfish-windows-x86-64-avx2.exe"
@@ -195,7 +196,7 @@ def minimax_algorithm_move(board, minimax_color):
 
     for move in board.legal_moves:
         board.push(move)
-        move_value = minimax(board, minimax_color, opponent_color, 2, True, -9999999, 9999999)
+        move_value = minimax(board, minimax_color, opponent_color, 4, True, -9999999, 9999999)
         board.pop()
 
         if move_value > best_value:
@@ -222,7 +223,6 @@ def play_game(minimax_color):
     while not board.is_game_over():
 
         # chess board down white, up black
-        # Currently minimax play white and stockfish play black
         if board.turn == minimax_color:
             print(board.legal_moves)
             move = minimax_algorithm_move(board, minimax_color)
@@ -267,7 +267,7 @@ def update_stats(game_result, wins, captured_pieces_counter):
         for piece in pieces:
             captured_pieces_counter[color][piece] += 1
 
-def print_stats(total_games, wins, captured_pieces_counter, color):
+def print_stats(total_games, wins, captured_pieces_counter, color, average_time):
     print(f"\n\nStatistics when minimax algo plays {color}: ")
     print("Total games:", total_games)
     print("Wins for WHITE:", wins["WHITE"])
@@ -279,24 +279,40 @@ def print_stats(total_games, wins, captured_pieces_counter, color):
         print(f"Captured pieces for {color}:")
         for piece, count in counts.items():
             print(f"{piece}: {count}")
+    
+    print(f"Average game duration: {average_time:.2f} seconds\n")
 
 def play_and_collect_stats(total_games, player_color):
     wins = {"WHITE": 0, "BLACK": 0, "DRAW": 0}
     captured_pieces_counter = {"WHITE":{"P": 0, "N": 0, "B": 0, "R": 0, "Q": 0},
                                "BLACK":{"p": 0, "n": 0, "b": 0, "r": 0, "q": 0}}
+    
+    total_time = 0
+
     for _ in range(total_games):
+
+        start_time = time.time()
+
         game_result = play_game(player_color)
+
+        end_time = time.time()
+        game_time = end_time - start_time
+        total_time += game_time
+
         update_stats(game_result, wins, captured_pieces_counter)
-    return wins, captured_pieces_counter
+    
+    average_time = total_time / total_games
+
+    return wins, captured_pieces_counter, average_time
 
 def main():
     total_games = 3
 
-    wins_white, captured_pieces_counter_white = play_and_collect_stats(total_games, chess.WHITE)
-    wins_black, captured_pieces_counter_black = play_and_collect_stats(total_games, chess.BLACK)
+    wins_white, captured_pieces_counter_white, average_time_white = play_and_collect_stats(total_games, chess.WHITE)
+    wins_black, captured_pieces_counter_black, average_time_black = play_and_collect_stats(total_games, chess.BLACK)
 
-    print_stats(total_games, wins_white, captured_pieces_counter_white, "white")
-    print_stats(total_games, wins_black, captured_pieces_counter_black, "black")
+    print_stats(total_games, wins_white, captured_pieces_counter_white, "white", average_time_white)
+    print_stats(total_games, wins_black, captured_pieces_counter_black, "black", average_time_black)
 
 main()
 
