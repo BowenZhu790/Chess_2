@@ -6,9 +6,6 @@ import time
 
 from chess_algo_logger import ChessAlgoLogger
 # path_to_stockfish = "D:\stockfish\stockfish\stockfish-windows-x86-64-avx2.exe"
-# engine = chess.engine.SimpleEngine.popen_uci(path_to_stockfish)
-
-# engine.configure({"Skill Level": 5})
 
 board = chess.Board()
 
@@ -67,15 +64,13 @@ queen_square_table = [
     -20, -10, -10, -5, -5, -10, -10, -20
 ]
 
-# 升变，吃子，将军，等等。。。。同时根据不同棋子计算他们独立的分数
+
 def calculate_mobility(board):
     mobility_score = 0
 
-    # 直接遍历所有合法移动
     for move in board.legal_moves:
         moving_piece = board.piece_at(move.from_square)
         
-        # 基础分数调整，根据移动的棋子类型
         if moving_piece.piece_type == chess.PAWN:
             mobility_score += 1
         elif moving_piece.piece_type == chess.KNIGHT:
@@ -89,7 +84,6 @@ def calculate_mobility(board):
         # elif moving_piece.piece_type == chess.KING:
         #     mobility_score += 3
         
-        # 特殊操作分数调整
         if board.is_capture(move):
             mobility_score += 10
         if move.promotion is not None:
@@ -97,6 +91,13 @@ def calculate_mobility(board):
                 mobility_score += 10
             elif move.promotion in [chess.ROOK, chess.BISHOP, chess.KNIGHT]:
                 mobility_score += 5
+
+        board.push(move)
+        if board.is_check():
+            mobility_score += 50
+        if board.is_checkmate():
+            mobility_score += 5000
+        board.pop()
         
     return mobility_score
 
@@ -130,19 +131,19 @@ def evaluate_board(board, minimax_color, opponent_color):
     queen_value = 90 * (minimax_queen - opponent_queen)
 
     minimax_pawn_score = sum(pawn_square_table[i] for i in board.pieces(chess.PAWN, minimax_color))
-    opponent_pawn_score = sum(-pawn_square_table[chess.square_mirror(i)] for i in board.pieces(chess.PAWN, opponent_color))
+    opponent_pawn_score = sum(-(pawn_square_table[chess.square_mirror(i)]) for i in board.pieces(chess.PAWN, opponent_color))
 
     minimax_knight_score = sum(knight_square_table[i] for i in board.pieces(chess.KNIGHT, minimax_color))
-    opponent_knight_score = sum(-knight_square_table[chess.square_mirror(i)] for i in board.pieces(chess.KNIGHT, opponent_color))
+    opponent_knight_score = sum(-(knight_square_table[chess.square_mirror(i)]) for i in board.pieces(chess.KNIGHT, opponent_color))
 
     minimax_bishop_score = sum(bishop_square_table[i] for i in board.pieces(chess.BISHOP, minimax_color))
-    opponent_bishop_score = sum(-bishop_square_table[chess.square_mirror(i)] for i in board.pieces(chess.BISHOP, opponent_color))
+    opponent_bishop_score = sum(-(bishop_square_table[chess.square_mirror(i)]) for i in board.pieces(chess.BISHOP, opponent_color))
 
     minimax_rook_score = sum(rook_square_table[i] for i in board.pieces(chess.ROOK, minimax_color))
-    opponent_rook_score = sum(-rook_square_table[chess.square_mirror(i)] for i in board.pieces(chess.ROOK, opponent_color))
+    opponent_rook_score = sum(-(rook_square_table[chess.square_mirror(i)]) for i in board.pieces(chess.ROOK, opponent_color))
 
     minimax_queen_score = sum(queen_square_table[i] for i in board.pieces(chess.QUEEN, minimax_color))
-    opponent_queen_score = sum(-queen_square_table[chess.square_mirror(i)] for i in board.pieces(chess.QUEEN, opponent_color))
+    opponent_queen_score = sum(-(queen_square_table[chess.square_mirror(i)]) for i in board.pieces(chess.QUEEN, opponent_color))
 
     # this mobility depends on the depth of the search can be either the mobility of stockfish or the mobility of minimaxalgo
     # if it belongs to sotckfish then should be negative, vice versa
@@ -155,12 +156,25 @@ def evaluate_board(board, minimax_color, opponent_color):
     # return the estimate value
     return pieces_value + white_pieces_square_table_score + black_pieces_square_table_score - stockfish_mobility
 
+def moves_order(board, move):
+    if board.is_capture(move):
+        return 10  
+    else:
+        return 0 
+
 def minimax(board, minimax_color, opponent_color, depth, is_maximising_player, alpha, beta):
     # board = chess.Board()
     if depth == 0:
         return evaluate_board(board, minimax_color, opponent_color)
-
+    
+    legal_moves = list(board.legal_moves)
+    ordered_moves = [(move, moves_order(board, move)) for move in legal_moves]
+    
+    
     if is_maximising_player:
+
+        ordered_moves.sort(key = lambda x: x[1], reverse = True)
+
         max_value = -9999999
         for move in board.legal_moves:
             board.push(move)
@@ -172,6 +186,9 @@ def minimax(board, minimax_color, opponent_color, depth, is_maximising_player, a
                 break
         return max_value
     else:
+
+        ordered_moves.sort(key = lambda x: x[1], reverse = False)
+
         min_value = 9999999
         for move in board.legal_moves:
             board.push(move)
@@ -183,8 +200,7 @@ def minimax(board, minimax_color, opponent_color, depth, is_maximising_player, a
                 break
         return min_value
 
-
-def minimax_algorithm_move(board, minimax_color):
+def minimax_algorithm_move(board, minimax_color, max_depth):
     # board = chess.Board()
 
     best_move = None
@@ -196,7 +212,7 @@ def minimax_algorithm_move(board, minimax_color):
 
     for move in board.legal_moves:
         board.push(move)
-        move_value = minimax(board, minimax_color, opponent_color, 4, True, -9999999, 9999999)
+        move_value = minimax(board, minimax_color, opponent_color, max_depth, True, -9999999, 9999999)
         board.pop()
 
         if move_value > best_value:
@@ -205,8 +221,8 @@ def minimax_algorithm_move(board, minimax_color):
 
     return best_move
 
-    # if board.legal_moves:
-    #     return random.choice(list(board.legal_moves))
+
+
     
 
 def stock_fish_move(board, engine):
@@ -221,16 +237,13 @@ def play_game(minimax_color):
     engine = chess.engine.SimpleEngine.popen_uci(path_to_stockfish)
     engine.configure({"Skill Level": 0})
     while not board.is_game_over():
-
         # chess board down white, up black
         if board.turn == minimax_color:
             print(board.legal_moves)
-            move = minimax_algorithm_move(board, minimax_color)
-            # move = stock_fish_move(board, engine)
+            move = minimax_algorithm_move(board, minimax_color, 2)
         else:
             move = stock_fish_move(board, engine)
-            # move = minimax_algorithm_move(board, chess.BLACK)
-            # move = random.choice(list(board.legal_moves))
+            # move = minimax_algorithm_move(board, not minimax_color, 2)
         
         chess_logger.log_move(move, board.turn)
         if board.is_capture(move):
@@ -276,7 +289,7 @@ def print_stats(total_games, wins, captured_pieces_counter, color, average_time)
     print("Winning rate for BLACK:", wins["BLACK"] / total_games)
     print("Draws:", wins["DRAW"])
     for color, counts in captured_pieces_counter.items():
-        print(f"Captured pieces for {color}:")
+        print(f"{color}'s captured pieces:")
         for piece, count in counts.items():
             print(f"{piece}: {count}")
     
