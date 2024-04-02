@@ -428,63 +428,63 @@ def play_game(minimax_color, chess_logger):
 
     print("Game end! Results:", result)
     engine.quit()
-    return {"result": result, "captured": chess_logger.captured_pieces_sum, "chess_logger": chess_logger}
+    return result
 
 
-def update_stats(game_result, wins, captured_pieces_counter):
-    if game_result["result"] == "white win":
-        wins["WHITE"] += 1
-    elif game_result["result"] == "black win":
-        wins["BLACK"] += 1
-    else:
-        wins["DRAW"] += 1
+# def update_stats(game_result, wins, captured_pieces_counter):
+#     if game_result["result"] == "white win":
+#         wins["WHITE"] += 1
+#     elif game_result["result"] == "black win":
+#         wins["BLACK"] += 1
+#     else:
+#         wins["DRAW"] += 1
     
-    for color, pieces in game_result["captured"].items():
-        for piece in pieces:
-            captured_pieces_counter[color][piece] += 1
+#     for color, pieces in game_result["captured"].items():
+#         for piece in pieces:
+#             captured_pieces_counter[color][piece] += 1
 
-def print_stats(total_games, wins, captured_pieces_counter, color, average_time, average_moves):
-    print(f"\n\nStatistics when minimax algo plays {color}: ")
-    print("Total games:", total_games)
-    print("Wins for WHITE:", wins["WHITE"])
-    print("Winning rate for WHITE:", wins["WHITE"] / total_games)
-    print("Wins for BLACK:", wins["BLACK"])
-    print("Winning rate for BLACK:", wins["BLACK"] / total_games)
-    print("Draws:", wins["DRAW"])
-    for color, counts in captured_pieces_counter.items():
-        print(f"{color}'s captured pieces:")
-        for piece, count in counts.items():
-            print(f"{piece}: {count}")
+# def print_stats(total_games, wins, captured_pieces_counter, color, average_time, average_moves):
+#     print(f"\n\nStatistics when minimax algo plays {color}: ")
+#     print("Total games:", total_games)
+#     print("Wins for WHITE:", wins["WHITE"])
+#     print("Winning rate for WHITE:", wins["WHITE"] / total_games)
+#     print("Wins for BLACK:", wins["BLACK"])
+#     print("Winning rate for BLACK:", wins["BLACK"] / total_games)
+#     print("Draws:", wins["DRAW"])
+#     for color, counts in captured_pieces_counter.items():
+#         print(f"{color}'s captured pieces:")
+#         for piece, count in counts.items():
+#             print(f"{piece}: {count}")
     
-    print(f"Average game duration: {average_time:.2f} seconds\n")
-    print(f"Average moves per game: {average_moves:.2f}\n")
+#     print(f"Average game duration: {average_time:.2f} seconds\n")
+#     print(f"Average moves per game: {average_moves:.2f}\n")
 
-def play_and_collect_stats(total_games, player_color):
-    wins = {"WHITE": 0, "BLACK": 0, "DRAW": 0}
-    captured_pieces_counter = {"WHITE":{"P": 0, "N": 0, "B": 0, "R": 0, "Q": 0},
-                               "BLACK":{"p": 0, "n": 0, "b": 0, "r": 0, "q": 0}}
+# def play_and_collect_stats(total_games, player_color):
+#     wins = {"WHITE": 0, "BLACK": 0, "DRAW": 0}
+#     captured_pieces_counter = {"WHITE":{"P": 0, "N": 0, "B": 0, "R": 0, "Q": 0},
+#                                "BLACK":{"p": 0, "n": 0, "b": 0, "r": 0, "q": 0}}
     
-    total_moves = 0
-    total_time = 0
+#     total_moves = 0
+#     total_time = 0
 
-    for _ in range(total_games):
+#     for _ in range(total_games):
 
-        start_time = time.time()
+#         start_time = time.time()
 
-        game_result = play_game(player_color)
+#         game_result = play_game(player_color)
 
-        end_time = time.time()
-        game_time = end_time - start_time
-        total_time += game_time
+#         end_time = time.time()
+#         game_time = end_time - start_time
+#         total_time += game_time
 
-        total_moves += len(game_result["chess_logger"].white_moves) + len(game_result["chess_logger"].black_moves)
+#         total_moves += len(game_result["chess_logger"].white_moves) + len(game_result["chess_logger"].black_moves)
 
-        update_stats(game_result, wins, captured_pieces_counter)
+#         update_stats(game_result, wins, captured_pieces_counter)
     
-    average_time = total_time / total_games
-    average_moves = total_moves / total_games
+#     average_time = total_time / total_games
+#     average_moves = total_moves / total_games
 
-    return wins, captured_pieces_counter, average_time, average_moves
+#     return wins, captured_pieces_counter, average_time, average_moves
 
 
 # def main():
@@ -500,32 +500,33 @@ def play_and_collect_stats(total_games, player_color):
 #     # show_stats(total_games, wins_white, captured_pieces_counter_white, average_time_white, average_moves_white)
 
 def main():
-    total_games = 3  # 示范用，实际游戏次数可根据需要调整
+    total_games = 1  
 
-    # 分别为白方和黑方创建logger实例
+
     logger_white = ChessAlgoLogger()
     logger_black = ChessAlgoLogger()
 
     for _ in range(total_games):
-        # 白方作为minimax玩家
+
         start_time = time.time()
         game_result_white = play_game(chess.WHITE, logger_white)
         end_time = time.time()
         game_time_white = end_time - start_time
-        logger_white.log_game_result(game_result_white["result"], game_time_white)
+        logger_white.log_game_result(game_result_white, game_time_white)
 
     # for _ in range(total_games):
     #     start_time = time.time()
     #     game_result_black = play_game(chess.BLACK, logger_black)
     #     end_time = time.time()
     #     game_time_black = end_time - start_time
-    #     logger_black.log_game_result(game_result_black["result"], game_time_black)
+    #     logger_black.log_game_result(game_result_black, game_time_black)
 
-    # 分别打印作为白方和黑方时的统计信息
     print("Statistics when playing as WHITE:")
     logger_white.print_stats()
     print("\nStatistics when playing as BLACK:")
     logger_black.print_stats()
+
+
 if __name__ == "__main__":
     main()
 
