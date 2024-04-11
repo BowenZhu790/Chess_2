@@ -112,7 +112,7 @@ piece_material_scores = {
     }
 
 # Path to the Stockfish chess engine executable
-path_to_stockfish = "D:\\stockfish\\stockfish\\stockfish-windows-x86-64-avx2.exe"
+path_to_stockfish = "path_to_stockfish"
 
 # Calculates and returns the total material score for the given board position
 # This considers the material score for both players
