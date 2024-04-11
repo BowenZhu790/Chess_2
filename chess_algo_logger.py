@@ -12,7 +12,7 @@ class ChessAlgoLogger:
         self.captured_pieces_sum = {'WHITE': {'P': 0, 'N': 0, 'B': 0, 'R': 0, 'Q': 0},
                                     'BLACK': {'p': 0, 'n': 0, 'b': 0, 'r': 0, 'q': 0}}
         
-        # Initializes counters for games and moves
+        # Initialises counters for games and moves
         self.total_games = 0
         self.total_moves = 0
 
