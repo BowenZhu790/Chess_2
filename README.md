@@ -64,5 +64,13 @@ stockfish
 
 path_to_stockfish = "D:\path\to\stockfish\stockfish-windows-x86-64-avx2"
 
-5. Run the project according to the instructions provided in the documentation.
+5. Running tests.
+
+python test_chess_algo.py
+
+6. Running the main.
+
+python chess_algo.py
+
+
 
